@@ -1,40 +1,4 @@
-/*
 
-kesz:
- * arnyalas a hatarvonalon - 2014.09.22
- * szinezes a halmazon kivul - 2014.09.22
- * memoriaba rajzoljon eloszor, onnan a kepernyore - 2014.09.23
- * konfiguracios file kezelese - 2014.09.23
- * progress bar a rajzolashoz - 2014.09.24
- * tobbfele fraktalt lehessen valasztani - 2014.09.24
- * opcionalis: minden lepesnel koordinata-kiiras - 2014.09.24
- * kobos, kobos konjugalt fraktal - 2014.09.24
- * ketfele lepesmeret - 2014.09.24
- * tobb magot is hasznaljon - 2014.09.26
-
-
-kell:
- * parancssoros inditas
-   * 0 parameter
-   * lehet parameter a fraktal
-   * a zoom merteke
-   * a koordinatak
- * dupla felbontasu kep irasa a file-ba
- * konvergencia-kriterium a belso pontokra
- * Meg lehessen adni a nezet koordinatait es nagyitasat, ahova ugrani akarunk
- * kulonbozo kepbeallitasok a kepernyore es file-ba rajzolashoz
-   Ez nem trivialis. Lehetoseg: dupla felbontast be lehessen kapcsolni a file-a menteshez
- * kozepre zoomoljon
- * normalis sleep
- * windows-os verzio
- * weblap
- * jpeg/gif kezeles
- * file-ba irasnal ne irja felul az elozot (opcionalis: inditasnal megnezi,
-   hogy melyik a legnagyobb szamu kep -> regex: output[0-9]*.bmp -> abc sorrendben az
-   utolsot kikeresi. A file kimenet formatuma: outputNNNN.bmp
- 
-
-*/
 
 #include <math.h>
 #include <pthread.h>
@@ -110,6 +74,8 @@ bool HYPHENNEEDED;
 bool PRINTDOUBLE;
 int NOTHREADS;
 
+// this is the number of the latest picture in the pictures' folder
+int fileNumber;
 
 int outside = 0;
 char bitmap[PICS*PICS*4];
@@ -241,7 +207,14 @@ int readConfig()
 
 void writeBmp()
 {
-  FILE *fp = fopen("test.bmp","wb");
+  char fileName[13];
+  
+  fileNumber++;
+  strncpy(fileName, "test", 4);
+  sprintf(fileName + 4, "%4.4d", fileNumber);
+  strncpy(fileName + 8, ".bmp", 4);
+  
+  FILE *fp = fopen(fileName,"wb");
   bitmap_type *pbitmap  = (bitmap_type*)calloc(1,sizeof(bitmap_type));
   uint8_t *pixelbuffer = (uint8_t*)(&bitmap);
   strcpy(pbitmap->fileheader.signature,"BM");
@@ -481,6 +454,8 @@ int main(int argc, char **argv)
       fprintf(stderr, "Invalid threadnumber!\n");
       return -3;
     }
+    
+    fileNumber = getFileNumber();
       
     generate(NOTHREADS);
    

@@ -1,0 +1,33 @@
+kesz:
+ * arnyalas a hatarvonalon - 2014.09.22
+ * szinezes a halmazon kivul - 2014.09.22
+ * memoriaba rajzoljon eloszor, onnan a kepernyore - 2014.09.23
+ * konfiguracios file kezelese - 2014.09.23
+ * progress bar a rajzolashoz - 2014.09.24
+ * tobbfele fraktalt lehessen valasztani - 2014.09.24
+ * opcionalis: minden lepesnel koordinata-kiiras - 2014.09.24
+ * kobos, kobos konjugalt fraktal - 2014.09.24
+ * ketfele lepesmeret - 2014.09.24
+ * tobb magot is hasznaljon - 2014.09.26
+ * beolvassa a legnagyobb szamu kepfile nevebol a szamot egy szamlaloba, minden exportnal eggyel noveli - 2014.09.29
+
+
+kell:
+ * parancssoros inditas
+   * 0 parameter
+   * lehet parameter a fraktal
+   * a zoom merteke
+   * a koordinatak
+ * dupla felbontasu kep irasa a file-ba
+ * konvergencia-kriterium a belso pontokra
+ * Meg lehessen adni a nezet koordinatait es nagyitasat, ahova ugrani akarunk
+ * kulonbozo kepbeallitasok a kepernyore es file-ba rajzolashoz
+   Ez nem trivialis. Lehetoseg: dupla felbontast be lehessen kapcsolni a file-a menteshez
+ * kozepre zoomoljon
+ * normalis sleep
+ * windows-os verzio
+ * weblap
+ * jpeg/gif kezeles
+
+ 
+
