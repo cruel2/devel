@@ -28,13 +28,13 @@
 #define _ypixelpermeter 0x130B //2835 , 72 DPI
 #define pixel 0xFF
 #pragma pack(push,1)
-struct fileheader_type {
+typedef struct {
     uint8_t signature[2];
     uint32_t filesize;
     uint32_t reserved;
     uint32_t fileoffset_to_pixelarray;
-};
-struct bitmapinfoheader_type {
+} fileheader_type;
+typedef struct {
     uint32_t dibheadersize;
     uint32_t width;
     uint32_t height;
@@ -46,11 +46,11 @@ struct bitmapinfoheader_type {
     uint32_t xpixelpermeter;
     uint32_t numcolorspallette;
     uint32_t mostimpcolor;
-};
-struct bitmap_type {
+} bitmapinfoheader_type;
+typedef struct {
     fileheader_type fileheader;
     bitmapinfoheader_type bitmapinfoheader;
-};
+} bitmap_type;
 #pragma pack(pop)
 
 
@@ -217,7 +217,9 @@ void writeBmp()
   FILE *fp = fopen(fileName,"wb");
   bitmap_type *pbitmap  = (bitmap_type*)calloc(1,sizeof(bitmap_type));
   uint8_t *pixelbuffer = (uint8_t*)(&bitmap);
-  strcpy(pbitmap->fileheader.signature,"BM");
+  //strcpy(pbitmap->fileheader.signature,"BM");
+  pbitmap->fileheader.signature[0] = 'B';
+  pbitmap->fileheader.signature[1] = 'M';
   pbitmap->fileheader.filesize = FILESIZE;
   pbitmap->fileheader.fileoffset_to_pixelarray = sizeof(bitmap_type);
   pbitmap->bitmapinfoheader.dibheadersize =sizeof(bitmapinfoheader_type);
@@ -240,16 +242,17 @@ void writeBmp()
 
 void* generate_thread(void* arg_)
 {
+  int i, j, ii, jj;
   int outside;
   generateThreadArg* arg = (generateThreadArg*) arg_;
   
-  for (int i = arg->shift; i < PICS; i+=arg->step)
+  for (i = arg->shift; i < PICS; i+=arg->step)
   {
-    for (int j = 0; j < PICS; j++)
+    for (j = 0; j < PICS; j++)
     {
       int sum = 0;
-      for (int ii = 0; ii < 4; ii++)
-        for (int jj = 0; jj < 4; jj++)
+      for (ii = 0; ii < 4; ii++)
+        for (jj = 0; jj < 4; jj++)
         {
           if (isOK(i*4-60+ii, j*4+30+jj, &outside))
             sum += 1;
@@ -343,7 +346,7 @@ void idle(void)
 }
 
 
-void keyPressed(unsigned char key, int, int)
+void keyPressed(unsigned char key, int i1, int i2)
 {
   switch (key) {
   case 27:

@@ -6,8 +6,9 @@ bool isOK_Mandelbrot(int xx, int yy, int* outside)
     double cy = yy * zoom2 + ypos;
     double x = cx;
     double y = cy;
+    int i;
     
-    for (int i = 0; i < 100; i++)
+    for (i = 0; i < 100; i++)
     {
       if (x*x + y*y > 4.0)
       {
@@ -33,8 +34,9 @@ bool isOK_ConjMandelbrot(int xx, int yy, int* outside)
     double cy = yy * zoom2 + ypos;
     double x = cx;
     double y = cy;
+    int i;
     
-    for (int i = 0; i < 100; i++)
+    for (i = 0; i < 100; i++)
     {
       if (x*x + y*y > 4.0)
       {
@@ -60,8 +62,9 @@ bool isOK_Cubic(int xx, int yy, int* outside)
     double cy = yy * zoom2 + ypos;
     double x = cx;
     double y = cy;
+    int i;
     
-    for (int i = 0; i < 100; i++)
+    for (i = 0; i < 100; i++)
     {
       if (x*x + y*y > 4.0)
       {
@@ -87,8 +90,9 @@ bool isOK_ConjCubic(int xx, int yy, int* outside)
     double cy = yy * zoom2 + ypos;
     double x = cx;
     double y = cy;
+    int i;
     
-    for (int i = 0; i < 100; i++)
+    for (i = 0; i < 100; i++)
     {
       if (x*x + y*y > 4.0)
       {
@@ -114,8 +118,9 @@ bool isOK_Quartic(int xx, int yy, int* outside)
     double cy = yy * zoom2 + ypos;
     double x = cx;
     double y = cy;
+    int i;
     
-    for (int i = 0; i < 100; i++)
+    for (i = 0; i < 100; i++)
     {
       if (x*x + y*y > 4.0)
       {
@@ -141,8 +146,9 @@ bool isOK_ConjQuartic(int xx, int yy, int* outside)
     double cy = yy * zoom2 + ypos;
     double x = cx;
     double y = cy;
+    int i;
     
-    for (int i = 0; i < 100; i++)
+    for (i = 0; i < 100; i++)
     {
       if (x*x + y*y > 4.0)
       {

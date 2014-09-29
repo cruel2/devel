@@ -3,13 +3,18 @@
 
 #define X_TRANS 0.5
 
+#define bool int
+#define true 1
+#define false 0
 
 //this structure contains the parameters for the fractal generating threads
-struct generateThreadArg
+typedef struct
 {
   int shift;    // number of thread minus one
   int step;     // number of threads
-};
+} generateThreadArg;
+
+
 
 
 extern float xpos;
