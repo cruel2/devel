@@ -10,6 +10,7 @@ kesz:
  * ketfele lepesmeret - 2014.09.24
  * tobb magot is hasznaljon - 2014.09.26
  * beolvassa a legnagyobb szamu kepfile nevebol a szamot egy szamlaloba, minden exportnal eggyel noveli - 2014.09.29
+ * Julia - 2014.09.30
 
 
 kell:
@@ -28,6 +29,8 @@ kell:
  * windows-os verzio
  * weblap
  * jpeg/gif kezeles
+ * Mandelbulb
+ * Mandelbox
 
  
 

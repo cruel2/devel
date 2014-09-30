@@ -167,3 +167,29 @@ bool isOK_ConjQuartic(int xx, int yy, int* outside)
     return true;
 }
 
+
+bool isOK_Julia(int xx, int yy, int* outside)
+{
+    double x = xx * zoom2 + xpos - X_TRANS;
+    double y = yy * zoom2 + ypos;
+
+    int i;
+    
+    for (i = 0; i < 200; i++)
+    {
+      if (x*x + y*y > 4.0)
+      {
+        *outside = i;
+        return false;
+      }
+      
+      double tx = x*x - y*y + gcx;
+      double ty = 2*x*y + gcy;
+      
+      x = tx;
+      y = ty;
+    }
+    
+    *outside = 0;
+    return true;
+}

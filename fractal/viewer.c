@@ -77,6 +77,11 @@ int NOTHREADS;
 // this is the number of the latest picture in the pictures' folder
 int fileNumber;
 
+int chosenFractal;
+
+// complex parameter for the chosen fractal
+float gcx, gcy;
+
 int outside = 0;
 char bitmap[PICS*PICS*4];
 pthread_mutex_t bitmap_mutex;
@@ -240,7 +245,7 @@ void writeBmp()
 }
 
 
-void* generate_thread(void* arg_)
+void* generate_thread_Mandelbrot(void* arg_)
 {
   int i, j, ii, jj;
   int outside;
@@ -282,11 +287,65 @@ void* generate_thread(void* arg_)
 }
 
 
+void* generate_thread_Julia(void* arg_)
+{
+  int i, j, ii, jj;
+  int outside;
+  generateThreadArg* arg = (generateThreadArg*) arg_;
+  
+  for (i = arg->shift; i < PICS; i+=arg->step)
+  {
+    for (j = 0; j < PICS; j++)
+    {
+      int sum = 0;
+      for (ii = 0; ii < 4; ii++)
+        for (jj = 0; jj < 4; jj++)
+        {
+          if (isOK(i*4-60+ii, j*4+30+jj, &outside))
+            sum += 1;
+        }
+      
+      pthread_mutex_lock(&bitmap_mutex);    
+      if (sum > 0)
+      {
+        bitmap[(PICS * j + i) * 4] = 15 * sum;
+        bitmap[(PICS * j + i) * 4 + 1] = 0;
+        bitmap[(PICS * j + i) * 4 + 2] = 0;
+        bitmap[(PICS * j + i) * 4 + 3] = 0;
+      }
+      else
+      {
+        if (outside < 100)
+        {
+          bitmap[(PICS * j + i) * 4] = min(2 * outside, 255);
+          bitmap[(PICS * j + i) * 4 + 1] = 0;
+          bitmap[(PICS * j + i) * 4 + 2] = 0;
+          bitmap[(PICS * j + i) * 4 + 3] = 0;
+        }
+        else
+        {
+          bitmap[(PICS * j + i) * 4] = 200;
+          bitmap[(PICS * j + i) * 4 + 1] = min(2 * (outside - 100), 255);
+          bitmap[(PICS * j + i) * 4 + 2] = 0;
+          bitmap[(PICS * j + i) * 4 + 3] = 0;
+        }
+        outside = 0;
+      }
+      pthread_mutex_unlock(&bitmap_mutex);
+    }
+    float ready = ceil(100.0f * i / PICS);
+    printf("\b\b\b%3d", (int)ready);
+  }
+}
+
+
+
 int generate(int noThreads)
 {
   int i;
   generateThreadArg* arg;
   pthread_t thread1, thread2;
+  void* (*genThread)(void*);
   
   // initialization of thread arguments
   arg = (generateThreadArg*) malloc(sizeof(generateThreadArg) * noThreads);
@@ -303,15 +362,30 @@ int generate(int noThreads)
     
   printf("Generating picture -    %%");
   
+  switch(chosenFractal)
+  {
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+      genThread = generate_thread_Mandelbrot;
+      break;
+    case 7:
+      genThread = generate_thread_Julia;
+      break;
+  }
+      
   for (i = 0; i < noThreads; i++)
   {
-    if (pthread_create(&thread1, NULL, generate_thread, (void*)&arg[i]))
+    if (pthread_create(&thread1, NULL, genThread, (void*)&arg[i]))
     {
       fprintf(stderr, "Can't create thread #%d!\n", i);
       return -1;
     }
   }
-  
+     
   if (pthread_join(thread1, NULL))
   {
     fprintf(stderr, "Error while waiting for thread!\n");
@@ -408,9 +482,7 @@ void keyPressed(unsigned char key, int i1, int i2)
 }
 
 int main(int argc, char **argv)
-{
-    int choose;
-    
+{    
     // default value
     NOTHREADS = 1;
     
@@ -420,11 +492,12 @@ int main(int argc, char **argv)
     printf("3 - Kobos\n");
     printf("4 - Konjugalt kobos\n");
     printf("5 - Kvartikus\n");
-    printf("6 - Konjugalt kvartikus\n\n");
+    printf("6 - Konjugalt kvartikus\n");
+    printf("7 - Julia\n\n");
     printf("Valasztom: ");
-    scanf("%d", &choose);
+    scanf("%d", &chosenFractal);
     
-    switch(choose)
+    switch(chosenFractal)
     {
       case 1:
         isOK = isOK_Mandelbrot;
@@ -443,6 +516,14 @@ int main(int argc, char **argv)
         break;
       case 6:
         isOK = isOK_ConjQuartic;
+        break;
+      case 7:
+        isOK = isOK_Julia;
+        printf("Komplex parameter ertekei:\n");
+        printf("cx = ");
+        scanf("%f", &gcx);
+        printf("cy = ");
+        scanf("%f", &gcy);
         break;
       default:
         printf("Hibas valasztas.\n\n");
