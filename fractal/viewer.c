@@ -1,5 +1,4 @@
 
-
 #include <math.h>
 #include <pthread.h>
 #include <stdlib.h>
@@ -10,16 +9,15 @@
 #include <GL/glut.h>
 #include <GL/freeglut.h>
 
+#include "config.h"
 #include "frac.h"
 
 
 #define SIZE 0.001
-#define PICS 450
 
 
 #define _height PICS
 #define _width PICS
-#define _bitsperpixel 32
 #define _planes 1
 #define _compression 0
 //#define _pixelbytesize _height*_width*_bitsperpixel/8
@@ -61,18 +59,9 @@ float xpos = 0.0;
 float ypos = 0.0;
 
 
-// Values come from the config file
-int WIDTH;
-int HEIGHT;
-int BITSPERPIXEL;
-int PIXELBYTESIZE;
-int FILESIZE;
-bool WRITECOORDS;
-int STEPSIZE1;
-int STEPSIZE2;
-bool HYPHENNEEDED;
-bool PRINTDOUBLE;
-int NOTHREADS;
+// TODO ezt ki kell majd szedni!
+// Akadalyozza a meret-beallitast!
+//int PICS;
 
 // this is the number of the latest picture in the pictures' folder
 int fileNumber;
@@ -84,6 +73,7 @@ float gcx, gcy;
 
 int outside = 0;
 char bitmap[PICS*PICS*4];
+//char* bitmap;
 pthread_mutex_t bitmap_mutex;
 
 // Points to the inclusion function
@@ -96,128 +86,39 @@ inline unsigned char min(int a, int b)
 }
 
 
-int readConfig()
-{
-  int temp = 0;
-  FILE *fp = fopen("config.ini", "r");
-  if (!fp)
-  {
-    printf("Can't open config file!\n");
-    return -1;
-  }
-  
-  if (!fscanf(fp, "WIDTH = %d\n", &WIDTH))
-  {
-    printf("Couldn't read width!\n");
-    return -2;
-  }
-    
-  if (!fscanf(fp, "HEIGHT = %d\n", &HEIGHT))
-  {
-    printf("Couldn't read height!\n");
-    return -2;
-  }
-  
-  if (!fscanf(fp, "BITSPERPIXEL = %d\n", &temp))
-  {
-    printf("Couldn't read bitsperpixel!\n");
-    return -2;
-  }
-  
-  if (!fscanf(fp, "WRITECOORDS = %d\n", &temp))
-  {
-    printf("Couldn't read write coords!\n");
-    return -2;
-  }
-  if (temp == 1)
-    WRITECOORDS = true;
-  else if (temp == 0)
-    WRITECOORDS = false;
-  else
-  {
-    printf("Invalid value for write coords!\n");
-    return -2;
-  }
-  
-  if (!fscanf(fp, "STEPSIZE1 = %d\n", &STEPSIZE1))
-  {
-    printf("Couldn't read step size 1!\n");
-    return -2;
-  }
-
-  if (!fscanf(fp, "STEPSIZE2 = %d\n", &STEPSIZE2))
-  {
-    printf("Couldn't read step size 2!\n");
-    return -2;
-  }
-  
-  if (!fscanf(fp, "HYPHENNEEDED = %d\n", &temp))
-  {
-    printf("Couldn't read hyphen needed!\n");
-    return -2;
-  }
-  
-  if (temp == 1)
-    HYPHENNEEDED = true;
-  else if (temp == 0)
-    HYPHENNEEDED = false;
-  else
-  {
-    printf("Invalid value for hyphen needed!\n");
-    return -2;
-  }
-  
-  if (!fscanf(fp, "PRINTDOUBLE = %d\n", &temp))
-  {
-    printf("Couldn't read print double!\n");
-    return -2;
-  }
-  
-  if (temp == 1)
-    PRINTDOUBLE = true;
-  else if (temp == 0)
-    PRINTDOUBLE = false;
-  else
-  {
-    printf("Invalid value for print double!\n");
-    return -2;
-  }
-  
-  if (!fscanf(fp, "NOTHREADS = %d\n", &NOTHREADS))
-  {
-    printf("Couldn't read number of threads!\n");
-    return -2;
-  }
-  
-  PIXELBYTESIZE = WIDTH * HEIGHT * _bitsperpixel / 8;
-  FILESIZE = PIXELBYTESIZE + sizeof(bitmap);  // TODO ez igy biztos, hogy jo?
-  
-  if (0)
-  {
-    printf("Config file reading - DEBUG\n");
-    printf("WIDTH:        %d\n", WIDTH);
-    printf("HEIGHT:       %d\n", HEIGHT);
-    printf("BITSPERPIXEL: %d\n", BITSPERPIXEL);
-    printf("WRITECOORDS:  %d\n", (int)WRITECOORDS);
-    printf("STEPSIZE1:    %d\n", STEPSIZE1);
-    printf("STEPSIZE2:    %d\n", STEPSIZE2);
-    printf("HYPHENNEEDED: %d\n", (int)HYPHENNEEDED);
-    printf("PRINTDOUBLE:  %d\n", (int)PRINTDOUBLE);
-    printf("NOTHREADS:    %d\n", NOTHREADS);
-  }
-  
-  return 1;
-}
-
-
 void writeBmp()
 {
   char fileName[13];
+  //char* myBitmap;
+  //int myFileSize, myWidth, myHeight;
+  
+  /*if (PRINTDOUBLE)
+  {
+    PICS *= 2;
+    char* oldBitmap = bitmap;
+    myBitmap = (char*) malloc (PICS*PICS*4*4);
+    generate();
+    PICS /= 2;
+  }*/
   
   fileNumber++;
   strncpy(fileName, "test", 4);
   sprintf(fileName + 4, "%4.4d", fileNumber);
   strncpy(fileName + 8, ".bmp", 4);
+  
+  /*if (PRINTDOUBLE)
+  {
+    myFileSize = 4 * PICS * PICS * 4;
+    myWidth = WIDTH * 2;
+    myHeight = HEIGHT * 2;
+  }
+  else
+  {
+    myFileSize = PICS * PICS * 4;
+    myWidth = WIDTH;
+    myHeight = HEIGHT;
+  }*/
+      
   
   FILE *fp = fopen(fileName,"wb");
   bitmap_type *pbitmap  = (bitmap_type*)calloc(1,sizeof(bitmap_type));
@@ -242,6 +143,9 @@ void writeBmp()
   fwrite(pixelbuffer, 1, PIXELBYTESIZE, fp);
   fclose(fp);
   free(pbitmap);
+  
+  /*if (PRINTDOUBLE)
+    free(myBitmap);*/
 }
 
 
@@ -315,7 +219,7 @@ void* generate_thread_Julia(void* arg_)
       }
       else
       {
-        if (outside < 100)
+        if (outside < 150)
         {
           bitmap[(PICS * j + i) * 4] = min(2 * outside, 255);
           bitmap[(PICS * j + i) * 4 + 1] = 0;
@@ -324,8 +228,8 @@ void* generate_thread_Julia(void* arg_)
         }
         else
         {
-          bitmap[(PICS * j + i) * 4] = 200;
-          bitmap[(PICS * j + i) * 4 + 1] = min(2 * (outside - 100), 255);
+          bitmap[(PICS * j + i) * 4] = 255;
+          bitmap[(PICS * j + i) * 4 + 1] = min(2 * (outside - 150), 255);
           bitmap[(PICS * j + i) * 4 + 2] = 0;
           bitmap[(PICS * j + i) * 4 + 3] = 0;
         }
@@ -358,7 +262,7 @@ int generate(int noThreads)
   pthread_mutex_init(&bitmap_mutex, NULL);
 
   if (WRITECOORDS)
-    printf("X : %f, Y : %f, zoom: %f\n", xpos, ypos, zoom2);
+    printf("\nX : %f, Y : %f, zoom: %f\n", xpos, ypos, zoom2);
     
   printf("Generating picture -    %%");
   
@@ -373,6 +277,7 @@ int generate(int noThreads)
       genThread = generate_thread_Mandelbrot;
       break;
     case 7:
+    case 8:
       genThread = generate_thread_Julia;
       break;
   }
@@ -423,68 +328,70 @@ void idle(void)
 void keyPressed(unsigned char key, int i1, int i2)
 {
   switch (key) {
-  case 27:
-    exit(0);
-    break;
-  case 'q':
-    glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
-    glutSetOption(GLUT_ACTION_GLUTMAINLOOP_RETURNS, GLUT_ACTION_CONTINUE_EXECUTION);
-    glutLeaveMainLoop();
-    break;
-  case 't':
-    zoom2 *= 0.5;
-    generate(NOTHREADS);
-    break;
-  case 'g':
-    zoom2 /= 0.5;
-    generate(NOTHREADS);
-    break;
+    case 27:
+      exit(0);
+      break;
+    case 'q':
+      glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
+      glutSetOption(GLUT_ACTION_GLUTMAINLOOP_RETURNS, GLUT_ACTION_CONTINUE_EXECUTION);
+      glutLeaveMainLoop();
+      break;
+    case 't':
+      zoom2 *= 0.5;
+      generate(NOTHREADS);
+      break;
+    case 'g':
+      zoom2 /= 0.5;
+      generate(NOTHREADS);
+      break;
     
-  case 'i':
-    ypos -= zoom2 * STEPSIZE1;
-    generate(NOTHREADS);
-    break;
-  case 'k':
-    ypos += zoom2 * STEPSIZE1;
-    generate(NOTHREADS);
-    break;
-  case 'j':
-    xpos -= zoom2 * STEPSIZE1;
-    generate(NOTHREADS);
-    break;
-  case 'l':
-    xpos += zoom2 * STEPSIZE1;
-    generate(NOTHREADS);
-    break;
-  case 'I':
-    ypos -= zoom2 * STEPSIZE2;
-    generate(NOTHREADS);
-    break;
-  case 'K':
-    ypos += zoom2 * STEPSIZE2;
-    generate(NOTHREADS);
-    break;
-  case 'J':
-    xpos -= zoom2 * STEPSIZE2;
-    generate(NOTHREADS);
-    break;
-  case 'L':
-    xpos += zoom2 * STEPSIZE2;
-    generate(NOTHREADS);
-    break;
-  case 'w':
-    printf("X : %f, Y : %f, zoom: %f\n", xpos, ypos, zoom2);
-    break;
-  case 'p':
-    writeBmp();
-    break;
+    case 'i':
+      ypos -= zoom2 * STEPSIZE1;
+      generate(NOTHREADS);
+      break;
+    case 'k':
+      ypos += zoom2 * STEPSIZE1;
+      generate(NOTHREADS);
+      break;
+    case 'j':
+      xpos -= zoom2 * STEPSIZE1;
+      generate(NOTHREADS);
+      break;
+    case 'l':
+      xpos += zoom2 * STEPSIZE1;
+      generate(NOTHREADS);
+      break;
+    case 'I':
+      ypos -= zoom2 * STEPSIZE2;
+      generate(NOTHREADS);
+      break;
+    case 'K':
+      ypos += zoom2 * STEPSIZE2;
+      generate(NOTHREADS);
+      break;
+    case 'J':
+      xpos -= zoom2 * STEPSIZE2;
+      generate(NOTHREADS);
+      break;
+    case 'L':
+      xpos += zoom2 * STEPSIZE2;
+      generate(NOTHREADS);
+      break;
+    case 'w':
+      printf("X : %f, Y : %f, zoom: %f\n", xpos, ypos, zoom2);
+      break;
+    case 'p':
+      writeBmp();
+      break;
   }
 }
+
 
 int main(int argc, char **argv)
 {    
     // default value
     NOTHREADS = 1;
+    //PICS = 450;
     
     printf("Melyik legyen?\n\n");
     printf("1 - Mandelbrot\n");
@@ -493,7 +400,8 @@ int main(int argc, char **argv)
     printf("4 - Konjugalt kobos\n");
     printf("5 - Kvartikus\n");
     printf("6 - Konjugalt kvartikus\n");
-    printf("7 - Julia\n\n");
+    printf("7 - Julia\n");
+    printf("8 - Konjugalt Julia\n\n");
     printf("Valasztom: ");
     scanf("%d", &chosenFractal);
     
@@ -519,6 +427,14 @@ int main(int argc, char **argv)
         break;
       case 7:
         isOK = isOK_Julia;
+        printf("Komplex parameter ertekei:\n");
+        printf("cx = ");
+        scanf("%f", &gcx);
+        printf("cy = ");
+        scanf("%f", &gcy);
+        break;
+      case 8:
+        isOK = isOK_ConjJulia;
         printf("Komplex parameter ertekei:\n");
         printf("cx = ");
         scanf("%f", &gcx);

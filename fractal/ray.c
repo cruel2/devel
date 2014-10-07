@@ -21,23 +21,26 @@ A kep sikja parhuzamos az x-y sikkal es PICZ-ben van.
 #define INFTY       1E20   // INFINITY is reserved by math.h
 #define PICZ        4.0
 #define VIEWZ       5.0
-#define PIXELSIZE   0.0008
+//#define PIXELSIZE   0.0008
 #define HEIGHT      400
 #define WIDTH       400
 
 
-char* bitmap;
+// now it is the zoom
+float PIXELSIZE;
 
-// fractal translation coordinates
-float frac_x, frac_y, frac_z;
+// fractal translational coordinates
+float frac_x, frac_y;
+
+char* bitmap;
 
 
 // TODO : inline legyen?
-bool isOK(float cx, float cy, float cz)
+bool isOK4(float cx, float cy, float cz)
 {
-  float x = cx * 1.2;
-  float y = cy * 1.2;
-  float z = cz * 1.2;
+  float x = cx * 3.2 + frac_x;
+  float y = cy * 3.2 + frac_y;
+  float z = cz * 3.2;
   int i;
   
   for (i = 0; i < 80; i++)
@@ -53,9 +56,93 @@ bool isOK(float cx, float cy, float cz)
 }
 
 
-// TODO : inline legyen?
-bool isOK2(float x, float y, float z)
+bool isOK6(float cx, float cy, float cz)
 {
+  float x = cx * 3.2 + frac_x;
+  float y = cy * 3.2 + frac_y;
+  float z = cz * 3.2;
+  float c_x = 0.0;
+  float c_y = 0.0;
+  float c_z = 0.0;
+  int i;
+  
+  for (i = 0; i < 80; i++)
+  {
+    if (x * x + y * y + z * z > 4.0)
+      return false;
+    
+    x = x*x - y*y - z*z + c_x;
+    y = 2*x*z + c_y;
+    z = 2*x*y + c_z;
+  }
+  return true;
+}
+
+
+// Mandelbox akar lenni
+bool isOK(float cx, float cy, float cz)
+{
+  float mul = 30.1;
+  float x = cx * mul + frac_x;
+  float y = cy * mul + frac_y;
+  float z = cz * mul;
+  int i;
+  
+  for (i = 0; i < 80; i++)
+  {
+    if (x * x + y * y + z * z > 600.0)
+      return false;
+    
+    if (x > 1.0)
+      x = 2.0 - x;
+    else if (x < -1.0)
+      x = -2.0 - x;
+      
+    if (y > 1.0)
+      y = 2.0 - y;
+    else if (y < -1.0)
+      y = -2.0 - y;
+      
+    if (z > 1.0)
+      z = 2.0 - z;
+    else if (z < -1.0)
+      z = -2.0 - z;
+    
+    float sq = x*x + y*y + z*z;
+    if (sq < 0.25)
+    {
+      x *= 4.0; //
+      y *= 4.0; //
+      z *= 4.0; //
+    }
+    else if (sq < 1.0)
+    {
+      x /= sq;
+      y /= sq;
+      z /= sq;
+    }
+    
+    // magic number!
+    float tx = x * 2.0 + cx;
+    float ty = y * 2.0 + cy;
+    float tz = z * 2.0 + cz;
+    
+    x = tx;
+    y = ty;
+    z = tz;
+  }
+  return true;
+}
+
+
+
+// TODO : inline legyen?
+bool isOK9(float cx, float cy, float cz)
+{
+  float x = cx + frac_x;
+  float y = cy + frac_y;
+  float z = cz;
+  
   if (x*x + y*y + z*z <= 0.16 ||
      (x+0.3)*(x+0.3) + (y+0.3)*(y+0.3) + z*z < 0.16)
     return true;
@@ -223,6 +310,46 @@ void keyPressed(unsigned char key, int i1, int i2)
     case 'q':
       exit(0);
       break;
+    case 't':
+      PIXELSIZE *= 0.5;
+      generate();
+      break;
+    case 'g':
+      PIXELSIZE /= 0.5;
+      generate();
+      break;
+    case 'j':
+      frac_x += PIXELSIZE * 100;
+      generate();
+      break;
+    case 'l':
+      frac_x += PIXELSIZE * 100;
+      generate();
+      break;
+    case 'i':
+      frac_y += PIXELSIZE * 100;
+      generate();
+      break;
+    case 'k':
+      frac_y += PIXELSIZE * 100;
+      generate();
+      break;
+    case 'J':
+      frac_x += PIXELSIZE * 2000;
+      generate();
+      break;
+    case 'L':
+      frac_x += PIXELSIZE * 2000;
+      generate();
+      break;
+    case 'I':
+      frac_y += PIXELSIZE * 2000;
+      generate();
+      break;
+    case 'K':
+      frac_y += PIXELSIZE * 2000;
+      generate();
+      break;
   }
 }
 
@@ -246,8 +373,8 @@ void init(void)
 
 int main(int argc, char **argv)
 {
-  frac_x = frac_y = frac_z = 0.0f;
-  
+  frac_x = frac_y = 0.0;
+  PIXELSIZE = 0.0008;
   bitmap = (char*) malloc(HEIGHT * WIDTH * 4 * sizeof(char));
   
   generate();
@@ -256,7 +383,7 @@ int main(int argc, char **argv)
   glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
   glutInitWindowSize(WIDTH, HEIGHT);
   glutCreateWindow("ray");
-  glutDisplayFunc(display);
+  glutIdleFunc(display);
   glutKeyboardFunc(keyPressed);
   init();
   glutMainLoop();
