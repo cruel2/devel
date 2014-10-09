@@ -16,8 +16,8 @@
 #define SIZE 0.001
 
 
-#define _height PICS
-#define _width PICS
+#define _height 450
+#define _width 450
 #define _planes 1
 #define _compression 0
 //#define _pixelbytesize _height*_width*_bitsperpixel/8
@@ -59,10 +59,6 @@ float xpos = 0.0;
 float ypos = 0.0;
 
 
-// TODO ezt ki kell majd szedni!
-// Akadalyozza a meret-beallitast!
-//int PICS;
-
 // this is the number of the latest picture in the pictures' folder
 int fileNumber;
 
@@ -72,8 +68,7 @@ int chosenFractal;
 float gcx, gcy;
 
 int outside = 0;
-char bitmap[PICS*PICS*4];
-//char* bitmap;
+char* bitmap;
 pthread_mutex_t bitmap_mutex;
 
 // Points to the inclusion function
@@ -86,66 +81,79 @@ inline unsigned char min(int a, int b)
 }
 
 
+// it will free the allocated resources and does some exit stuff
+void destroy()
+{
+  printf("\n");
+  free(bitmap);
+}
+
+
 void writeBmp()
 {
   char fileName[13];
-  //char* myBitmap;
-  //int myFileSize, myWidth, myHeight;
+  char* myBitmap;
+  char* oldBitmap;
+  int myFileSize;
+  int oldWidth, oldHeight;
   
-  /*if (PRINTDOUBLE)
+  if (PRINTDOUBLE)
   {
-    PICS *= 2;
-    char* oldBitmap = bitmap;
-    myBitmap = (char*) malloc (PICS*PICS*4*4);
+    oldBitmap = bitmap;
+    myBitmap = (char*) malloc (HEIGHT*WIDTH*4*4);
+    bitmap = myBitmap;
     generate();
-    PICS /= 2;
-  }*/
+  }
+  else
+    myBitmap = bitmap;
   
   fileNumber++;
   strncpy(fileName, "test", 4);
   sprintf(fileName + 4, "%4.4d", fileNumber);
   strncpy(fileName + 8, ".bmp", 4);
   
-  /*if (PRINTDOUBLE)
-  {
-    myFileSize = 4 * PICS * PICS * 4;
-    myWidth = WIDTH * 2;
-    myHeight = HEIGHT * 2;
-  }
-  else
-  {
-    myFileSize = PICS * PICS * 4;
-    myWidth = WIDTH;
-    myHeight = HEIGHT;
-  }*/
-      
+  oldWidth = WIDTH;
+  oldHeight = HEIGHT;
   
+  if (PRINTDOUBLE)
+  {
+    WIDTH *= 2;
+    HEIGHT *= 2;
+  }
+  
+  myFileSize = WIDTH * HEIGHT * 4;
+      
   FILE *fp = fopen(fileName,"wb");
   bitmap_type *pbitmap  = (bitmap_type*)calloc(1,sizeof(bitmap_type));
-  uint8_t *pixelbuffer = (uint8_t*)(&bitmap);
-  //strcpy(pbitmap->fileheader.signature,"BM");
+  uint8_t *pixelbuffer = (uint8_t*)(myBitmap);
   pbitmap->fileheader.signature[0] = 'B';
   pbitmap->fileheader.signature[1] = 'M';
-  pbitmap->fileheader.filesize = FILESIZE;
+  pbitmap->fileheader.filesize = myFileSize;
   pbitmap->fileheader.fileoffset_to_pixelarray = sizeof(bitmap_type);
-  pbitmap->bitmapinfoheader.dibheadersize =sizeof(bitmapinfoheader_type);
+  pbitmap->bitmapinfoheader.dibheadersize = sizeof(bitmapinfoheader_type);
   pbitmap->bitmapinfoheader.width = WIDTH;
   pbitmap->bitmapinfoheader.height = HEIGHT;
   pbitmap->bitmapinfoheader.planes = _planes;
   pbitmap->bitmapinfoheader.bitsperpixel = _bitsperpixel;
   pbitmap->bitmapinfoheader.compression = _compression;
-  pbitmap->bitmapinfoheader.imagesize = PIXELBYTESIZE;
+  pbitmap->bitmapinfoheader.imagesize = myFileSize;
   pbitmap->bitmapinfoheader.ypixelpermeter = _ypixelpermeter ;
   pbitmap->bitmapinfoheader.xpixelpermeter = _xpixelpermeter ;
   pbitmap->bitmapinfoheader.numcolorspallette = 0;
   fwrite (pbitmap, 1, sizeof(bitmap_type),fp);
   
-  fwrite(pixelbuffer, 1, PIXELBYTESIZE, fp);
+  fwrite(pixelbuffer, 1, myFileSize, fp);
   fclose(fp);
   free(pbitmap);
   
-  /*if (PRINTDOUBLE)
-    free(myBitmap);*/
+  if (PRINTDOUBLE)
+  {
+    WIDTH /= 2;
+    HEIGHT /= 2;
+    myFileSize = WIDTH * HEIGHT * 4;
+    bitmap = oldBitmap;
+    free(myBitmap);
+  }
 }
 
 
@@ -155,9 +163,9 @@ void* generate_thread_Mandelbrot(void* arg_)
   int outside;
   generateThreadArg* arg = (generateThreadArg*) arg_;
   
-  for (i = arg->shift; i < PICS; i+=arg->step)
+  for (i = arg->shift; i < WIDTH; i+=arg->step)
   {
-    for (j = 0; j < PICS; j++)
+    for (j = 0; j < HEIGHT; j++)
     {
       int sum = 0;
       for (ii = 0; ii < 4; ii++)
@@ -170,22 +178,22 @@ void* generate_thread_Mandelbrot(void* arg_)
       pthread_mutex_lock(&bitmap_mutex);    
       if (sum > 0)
       {
-        bitmap[(PICS * j + i) * 4] = 15 * sum;
-        bitmap[(PICS * j + i) * 4 + 1] = 0;
-        bitmap[(PICS * j + i) * 4 + 2] = 0;
-        bitmap[(PICS * j + i) * 4 + 3] = 0;
+        bitmap[(WIDTH * j + i) * 4] = 15 * sum;
+        bitmap[(WIDTH * j + i) * 4 + 1] = 0;
+        bitmap[(WIDTH * j + i) * 4 + 2] = 0;
+        bitmap[(WIDTH * j + i) * 4 + 3] = 0;
       }
       else
       {
-        bitmap[(PICS * j + i) * 4] = 0;
-        bitmap[(PICS * j + i) * 4 + 1] = 255 - min(20 * outside, 255);
-        bitmap[(PICS * j + i) * 4 + 2] = 0;
-        bitmap[(PICS * j + i) * 4 + 3] = 0;
+        bitmap[(WIDTH * j + i) * 4] = 0;
+        bitmap[(WIDTH * j + i) * 4 + 1] = 255 - min(20 * outside, 255);
+        bitmap[(WIDTH * j + i) * 4 + 2] = 0;
+        bitmap[(WIDTH * j + i) * 4 + 3] = 0;
         outside = 0;
       }
       pthread_mutex_unlock(&bitmap_mutex);
     }
-    float ready = ceil(100.0f * i / PICS);
+    float ready = ceil(100.0f * i / WIDTH);
     printf("\b\b\b%3d", (int)ready);
   }
 }
@@ -197,9 +205,9 @@ void* generate_thread_Julia(void* arg_)
   int outside;
   generateThreadArg* arg = (generateThreadArg*) arg_;
   
-  for (i = arg->shift; i < PICS; i+=arg->step)
+  for (i = arg->shift; i < WIDTH; i+=arg->step)
   {
-    for (j = 0; j < PICS; j++)
+    for (j = 0; j < HEIGHT; j++)
     {
       int sum = 0;
       for (ii = 0; ii < 4; ii++)
@@ -212,32 +220,32 @@ void* generate_thread_Julia(void* arg_)
       pthread_mutex_lock(&bitmap_mutex);    
       if (sum > 0)
       {
-        bitmap[(PICS * j + i) * 4] = 15 * sum;
-        bitmap[(PICS * j + i) * 4 + 1] = 0;
-        bitmap[(PICS * j + i) * 4 + 2] = 0;
-        bitmap[(PICS * j + i) * 4 + 3] = 0;
+        bitmap[(WIDTH * j + i) * 4] = 15 * sum;
+        bitmap[(WIDTH * j + i) * 4 + 1] = 0;
+        bitmap[(WIDTH * j + i) * 4 + 2] = 0;
+        bitmap[(WIDTH * j + i) * 4 + 3] = 0;
       }
       else
       {
         if (outside < 150)
         {
-          bitmap[(PICS * j + i) * 4] = min(2 * outside, 255);
-          bitmap[(PICS * j + i) * 4 + 1] = 0;
-          bitmap[(PICS * j + i) * 4 + 2] = 0;
-          bitmap[(PICS * j + i) * 4 + 3] = 0;
+          bitmap[(WIDTH * j + i) * 4] = min(2 * outside, 255);
+          bitmap[(WIDTH * j + i) * 4 + 1] = 0;
+          bitmap[(WIDTH * j + i) * 4 + 2] = 0;
+          bitmap[(WIDTH * j + i) * 4 + 3] = 0;
         }
         else
         {
-          bitmap[(PICS * j + i) * 4] = 255;
-          bitmap[(PICS * j + i) * 4 + 1] = min(2 * (outside - 150), 255);
-          bitmap[(PICS * j + i) * 4 + 2] = 0;
-          bitmap[(PICS * j + i) * 4 + 3] = 0;
+          bitmap[(WIDTH * j + i) * 4] = 255;
+          bitmap[(WIDTH * j + i) * 4 + 1] = min(2 * (outside - 150), 255);
+          bitmap[(WIDTH * j + i) * 4 + 2] = 0;
+          bitmap[(WIDTH * j + i) * 4 + 3] = 0;
         }
         outside = 0;
       }
       pthread_mutex_unlock(&bitmap_mutex);
     }
-    float ready = ceil(100.0f * i / PICS);
+    float ready = ceil(100.0f * i / WIDTH);
     printf("\b\b\b%3d", (int)ready);
   }
 }
@@ -304,16 +312,16 @@ int generate(int noThreads)
 
 
 // draws image to screen
-void drawBox()
+void draw()
 {
-  glDrawPixels(PICS, PICS, GL_RGBA, GL_UNSIGNED_BYTE, &bitmap);
+  glDrawPixels(WIDTH, HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, bitmap);
 }
 
 
 void display(void)
 {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  drawBox();
+  draw();
   glutSwapBuffers();
   usleep(1);
 }
@@ -329,12 +337,9 @@ void keyPressed(unsigned char key, int i1, int i2)
 {
   switch (key) {
     case 27:
-      exit(0);
-      break;
     case 'q':
-      glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
-      glutSetOption(GLUT_ACTION_GLUTMAINLOOP_RETURNS, GLUT_ACTION_CONTINUE_EXECUTION);
-      glutLeaveMainLoop();
+      destroy();
+      exit(0);
       break;
     case 't':
       zoom2 *= 0.5;
@@ -388,10 +393,11 @@ void keyPressed(unsigned char key, int i1, int i2)
 
 
 int main(int argc, char **argv)
-{    
+{   
+    int i; 
+    
     // default value
     NOTHREADS = 1;
-    //PICS = 450;
     
     printf("Melyik legyen?\n\n");
     printf("1 - Mandelbrot\n");
@@ -455,7 +461,34 @@ int main(int argc, char **argv)
       return -3;
     }
     
+    // processing command-line arguments
+    for (i = 1; i < argc; i++)
+    {
+      switch(argv[i][0])
+      {
+        case 'f':
+          break;
+        case 'x':
+          //float temp;
+          //sscanf()
+          break;
+        case 'y':
+          break;
+        case 'z':
+          break;
+        case 'p':
+          break;
+        case 't':
+          break; 
+        default:
+          printf("Invalid command-line parameter: \'%c\' !", argv[i][0]);
+          return -4;
+      }
+    }
+    
     fileNumber = getFileNumber();
+    
+    bitmap = (char*) malloc(HEIGHT * WIDTH * 4 * sizeof(char));
       
     generate(NOTHREADS);
    

@@ -1,3 +1,4 @@
+
 #ifndef FRAC_H
 #define FRAC_H
 
@@ -32,6 +33,7 @@ bool isOK_ConjCubic(int xx, int yy, int* outside);
 bool isOK_Quartic(int xx, int yy, int* outside);
 bool isOK_ConjQuartic(int xx, int yy, int* outside);
 bool isOK_Julia(int xx, int yy, int* outside);
+bool isOK_ConjJulia(int xx, int yy, int* outside);
 
 int getFileNumber();
 

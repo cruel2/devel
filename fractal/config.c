@@ -108,7 +108,7 @@ int readConfig()
   }
   
   PIXELBYTESIZE = WIDTH * HEIGHT * _bitsperpixel / 8;
-  FILESIZE = PIXELBYTESIZE + sizeof(PICS*PICS*4);  // TODO ez igy biztos, hogy jo?
+  FILESIZE = PIXELBYTESIZE + sizeof(WIDTH*HEIGHT*4);  // TODO ez igy biztos, hogy jo?
   
   // only for debug
   if (0)

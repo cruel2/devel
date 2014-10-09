@@ -7,7 +7,7 @@
 #include "frac.h"
 
 #define _bitsperpixel 32
-#define PICS 450
+//#define PICS 450
 
 
 extern int WIDTH;
@@ -21,6 +21,8 @@ extern int STEPSIZE2;
 extern bool HYPHENNEEDED;
 extern bool PRINTDOUBLE;
 extern int NOTHREADS;
+
+extern int PICS;
 
 
 int readConfig();
