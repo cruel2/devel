@@ -1,3 +1,7 @@
+
+Otletek a programhoz
+--------------------
+
 kesz:
  * arnyalas a hatarvonalon - 2014.09.22
  * szinezes a halmazon kivul - 2014.09.22
@@ -11,14 +15,12 @@ kesz:
  * tobb magot is hasznaljon - 2014.09.26
  * beolvassa a legnagyobb szamu kepfile nevebol a szamot egy szamlaloba, minden exportnal eggyel noveli - 2014.09.29
  * Julia - 2014.09.30
+ * parancssori parameterek - 2014.10.09
 
 
 kell:
- * parancssoros inditas
-   * 0 parameter
-   * lehet parameter a fraktal
-   * a zoom merteke
-   * a koordinatak
+ * kep-exportalas konyvtara configban
+ * ablakmeret beallitasa configban
  * dupla felbontasu kep irasa a file-ba
  * konvergencia-kriterium a belso pontokra
  * Meg lehessen adni a nezet koordinatait es nagyitasat, ahova ugrani akarunk
@@ -33,4 +35,7 @@ kell:
  * Mandelbox
 
  
-
+A publikalt kiadashoz
+---------------------
+ * A nem mukodo feature-oket kiszedni a kodbol, a config-bol es a readme-bol!
+ 

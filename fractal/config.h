@@ -7,7 +7,17 @@
 #include "frac.h"
 
 #define _bitsperpixel 32
-//#define PICS 450
+
+
+// special settings for certain fractal types
+// These settings will be overwritten by command-line parameters.
+typedef struct
+{
+  float xpos;
+  float ypos;
+  float zoom;
+  int noIterations;  
+} fractalConfig_type;
 
 
 extern int WIDTH;
@@ -21,11 +31,12 @@ extern int STEPSIZE2;
 extern bool HYPHENNEEDED;
 extern bool PRINTDOUBLE;
 extern int NOTHREADS;
-
-extern int PICS;
+extern int NOITERATIONS;
+extern bool READONLY;
 
 
 int readConfig();
+int writeConfig();
 
 
 #endif

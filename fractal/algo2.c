@@ -1,5 +1,7 @@
 
+#include "config.h"
 #include "frac.h"
+
 
 bool isOK_Mandelbrot(int xx, int yy, int* outside)
 {
@@ -9,7 +11,7 @@ bool isOK_Mandelbrot(int xx, int yy, int* outside)
     double y = cy;
     int i;
     
-    for (i = 0; i < 100; i++)
+    for (i = 0; i < NOITERATIONS; i++)
     {
       if (x*x + y*y > 4.0)
       {
@@ -37,7 +39,7 @@ bool isOK_ConjMandelbrot(int xx, int yy, int* outside)
     double y = cy;
     int i;
     
-    for (i = 0; i < 100; i++)
+    for (i = 0; i < NOITERATIONS; i++)
     {
       if (x*x + y*y > 4.0)
       {
@@ -65,7 +67,7 @@ bool isOK_Cubic(int xx, int yy, int* outside)
     double y = cy;
     int i;
     
-    for (i = 0; i < 100; i++)
+    for (i = 0; i < NOITERATIONS; i++)
     {
       if (x*x + y*y > 4.0)
       {
@@ -93,7 +95,7 @@ bool isOK_ConjCubic(int xx, int yy, int* outside)
     double y = cy;
     int i;
     
-    for (i = 0; i < 100; i++)
+    for (i = 0; i < NOITERATIONS; i++)
     {
       if (x*x + y*y > 4.0)
       {
@@ -121,7 +123,7 @@ bool isOK_Quartic(int xx, int yy, int* outside)
     double y = cy;
     int i;
     
-    for (i = 0; i < 100; i++)
+    for (i = 0; i < NOITERATIONS; i++)
     {
       if (x*x + y*y > 4.0)
       {
@@ -149,7 +151,7 @@ bool isOK_ConjQuartic(int xx, int yy, int* outside)
     double y = cy;
     int i;
     
-    for (i = 0; i < 100; i++)
+    for (i = 0; i < NOITERATIONS; i++)
     {
       if (x*x + y*y > 4.0)
       {
@@ -176,7 +178,7 @@ bool isOK_Julia(int xx, int yy, int* outside)
 
     int i;
     
-    for (i = 0; i < 300; i++)
+    for (i = 0; i < NOITERATIONS; i++)
     {
       if (x*x + y*y > 4.0)
       {
@@ -203,7 +205,7 @@ bool isOK_ConjJulia(int xx, int yy, int* outside)
 
     int i;
     
-    for (i = 0; i < 300; i++)
+    for (i = 0; i < NOITERATIONS; i++)
     {
       if (x*x + y*y > 4.0)
       {

@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <unistd.h>
 #include <GL/gl.h>
 #include <GL/glut.h>
 #include <GL/freeglut.h>
@@ -16,40 +15,11 @@
 #define SIZE 0.001
 
 
-#define _height 450
-#define _width 450
-#define _planes 1
-#define _compression 0
+//#define _height 450
+//#define _width 450
 //#define _pixelbytesize _height*_width*_bitsperpixel/8
 //#define _filesize _pixelbytesize+sizeof(bitmap)
-#define _xpixelpermeter 0x130B //2835 , 72 DPI
-#define _ypixelpermeter 0x130B //2835 , 72 DPI
 #define pixel 0xFF
-#pragma pack(push,1)
-typedef struct {
-    uint8_t signature[2];
-    uint32_t filesize;
-    uint32_t reserved;
-    uint32_t fileoffset_to_pixelarray;
-} fileheader_type;
-typedef struct {
-    uint32_t dibheadersize;
-    uint32_t width;
-    uint32_t height;
-    uint16_t planes;
-    uint16_t bitsperpixel;
-    uint32_t compression;
-    uint32_t imagesize;
-    uint32_t ypixelpermeter;
-    uint32_t xpixelpermeter;
-    uint32_t numcolorspallette;
-    uint32_t mostimpcolor;
-} bitmapinfoheader_type;
-typedef struct {
-    fileheader_type fileheader;
-    bitmapinfoheader_type bitmapinfoheader;
-} bitmap_type;
-#pragma pack(pop)
 
 
 // actual position, zoom
@@ -86,74 +56,6 @@ void destroy()
 {
   printf("\n");
   free(bitmap);
-}
-
-
-void writeBmp()
-{
-  char fileName[13];
-  char* myBitmap;
-  char* oldBitmap;
-  int myFileSize;
-  int oldWidth, oldHeight;
-  
-  if (PRINTDOUBLE)
-  {
-    oldBitmap = bitmap;
-    myBitmap = (char*) malloc (HEIGHT*WIDTH*4*4);
-    bitmap = myBitmap;
-    generate();
-  }
-  else
-    myBitmap = bitmap;
-  
-  fileNumber++;
-  strncpy(fileName, "test", 4);
-  sprintf(fileName + 4, "%4.4d", fileNumber);
-  strncpy(fileName + 8, ".bmp", 4);
-  
-  oldWidth = WIDTH;
-  oldHeight = HEIGHT;
-  
-  if (PRINTDOUBLE)
-  {
-    WIDTH *= 2;
-    HEIGHT *= 2;
-  }
-  
-  myFileSize = WIDTH * HEIGHT * 4;
-      
-  FILE *fp = fopen(fileName,"wb");
-  bitmap_type *pbitmap  = (bitmap_type*)calloc(1,sizeof(bitmap_type));
-  uint8_t *pixelbuffer = (uint8_t*)(myBitmap);
-  pbitmap->fileheader.signature[0] = 'B';
-  pbitmap->fileheader.signature[1] = 'M';
-  pbitmap->fileheader.filesize = myFileSize;
-  pbitmap->fileheader.fileoffset_to_pixelarray = sizeof(bitmap_type);
-  pbitmap->bitmapinfoheader.dibheadersize = sizeof(bitmapinfoheader_type);
-  pbitmap->bitmapinfoheader.width = WIDTH;
-  pbitmap->bitmapinfoheader.height = HEIGHT;
-  pbitmap->bitmapinfoheader.planes = _planes;
-  pbitmap->bitmapinfoheader.bitsperpixel = _bitsperpixel;
-  pbitmap->bitmapinfoheader.compression = _compression;
-  pbitmap->bitmapinfoheader.imagesize = myFileSize;
-  pbitmap->bitmapinfoheader.ypixelpermeter = _ypixelpermeter ;
-  pbitmap->bitmapinfoheader.xpixelpermeter = _xpixelpermeter ;
-  pbitmap->bitmapinfoheader.numcolorspallette = 0;
-  fwrite (pbitmap, 1, sizeof(bitmap_type),fp);
-  
-  fwrite(pixelbuffer, 1, myFileSize, fp);
-  fclose(fp);
-  free(pbitmap);
-  
-  if (PRINTDOUBLE)
-  {
-    WIDTH /= 2;
-    HEIGHT /= 2;
-    myFileSize = WIDTH * HEIGHT * 4;
-    bitmap = oldBitmap;
-    free(myBitmap);
-  }
 }
 
 
@@ -385,6 +287,34 @@ void keyPressed(unsigned char key, int i1, int i2)
     case 'w':
       printf("X : %f, Y : %f, zoom: %f\n", xpos, ypos, zoom2);
       break;
+    case 'W':
+      if (!READONLY)
+      {
+        char ans;
+        printf("Biztosan menteni akarod? [i/n]\nValasz: ");
+        scanf("%c", &ans);
+        switch(ans)
+        {
+          case 'i':
+          case 'y':
+          case 'I':
+          case 'Y':
+            if (writeConfig() == 1)
+              printf("\nBeallitasok sikeresen mentve.\n");
+            else
+              fprintf(stderr, "\nHiba mentes kozben!\n");
+            break;
+          case 'n':
+          case 'N':
+            break;
+          default:
+            printf("\nRossz valasz.\n");
+            break;
+        }
+      }
+      else
+        printf("\nA konfiguracios file irasvedett.\n");
+      break;
     case 'p':
       writeBmp();
       break;
@@ -394,23 +324,127 @@ void keyPressed(unsigned char key, int i1, int i2)
 
 int main(int argc, char **argv)
 {   
+    bool hasChosenFractal = false;
+    bool isGcxSet = false;
+    bool isGcySet = false;
+    bool printOnly = false;
     int i; 
     
-    // default value
+    // default values
     NOTHREADS = 1;
+    gcx = 0.0;
+    gcy = 0.0;
+        
+    if (readConfig() != 1)
+      return -1;
     
-    printf("Melyik legyen?\n\n");
-    printf("1 - Mandelbrot\n");
-    printf("2 - Konjugalt Mandelbrot\n");
-    printf("3 - Kobos\n");
-    printf("4 - Konjugalt kobos\n");
-    printf("5 - Kvartikus\n");
-    printf("6 - Konjugalt kvartikus\n");
-    printf("7 - Julia\n");
-    printf("8 - Konjugalt Julia\n\n");
-    printf("Valasztom: ");
-    scanf("%d", &chosenFractal);
+    if (NOTHREADS > 4 || NOTHREADS < 1)
+    {
+      fprintf(stderr, "Invalid threadnumber!\n");
+      return -3;
+    }
     
+    // processing command-line arguments
+    int firstChar = 0;
+    if (HYPHENNEEDED)
+      firstChar = 1;
+    
+    for (i = 1; i < argc; i++)
+    {
+      float temp;
+      
+      if (HYPHENNEEDED && argv[i][0] != '-')
+      {
+        fprintf(stderr, "Hyphen is needed on the beginning of argument!\n");
+        return -4;
+      }
+      
+      switch(argv[i][firstChar])
+      {
+        case 'f':
+          if(sscanf(&argv[i][firstChar + 1], "%d", &chosenFractal) != 1)
+          {
+            fprintf(stderr, "Couldn't process command-line argument: \'x\' !");
+            return -4;
+          }
+          hasChosenFractal = true;
+          break;
+        case 'x':
+          if(sscanf(&argv[i][firstChar + 1], "%f", &xpos) != 1)
+          {
+            fprintf(stderr, "Couldn't process command-line argument: \'x\' !");
+            return -4;
+          }
+          break;
+        case 'y':
+          if(sscanf(&argv[i][firstChar + 1], "%f", &ypos) != 1)
+          {
+            fprintf(stderr, "Couldn't process command-line argument: \'y\' !");
+            return -4;
+          }
+          break;
+        case 'z':
+          if(sscanf(&argv[i][firstChar + 1], "%f", &zoom2) != 1)
+          {
+            fprintf(stderr, "Couldn't process command-line argument: \'z\' !");
+            return -4;
+          }
+          break;
+        case 'p':
+          printOnly = true;
+          break;
+        case 't':
+          if(sscanf(&argv[i][firstChar + 1], "%d", &NOTHREADS) != 1)
+          {
+            fprintf(stderr, "Couldn't process command-line argument: \'t\' !");
+            return -4;
+          }
+          break; 
+        case 'c':
+          switch(argv[i][firstChar + 1])
+          {
+            case 'x':
+              if(sscanf(&argv[i][firstChar + 2], "%f", &gcx) != 1)
+              {
+                fprintf(stderr, "Couldn't process command-line argument: \'cx\' !");
+                return -4;
+              }
+              isGcxSet = true;
+              break;
+            case 'y':
+              if(sscanf(&argv[i][firstChar + 2], "%f", &gcy) != 1)
+              {
+                fprintf(stderr, "Couldn't process command-line argument: \'cy\' !");
+                return -4;
+              }
+              isGcySet = true;
+              break;
+            default:
+              fprintf(stderr, "Invalid command-line parameter: \'%c%c\' !",
+                      argv[i][firstChar], argv[i][firstChar + 1]);
+              return -4;
+          }
+        default:
+          fprintf(stderr, "Invalid command-line parameter: \'%c\' !\n", argv[i][0]);
+          return -4;
+      }
+    }
+    
+    if (!hasChosenFractal)
+    {
+      printf("Melyik legyen?\n\n");
+      printf("1 - Mandelbrot\n");
+      printf("2 - Konjugalt Mandelbrot\n");
+      printf("3 - Kobos\n");
+      printf("4 - Konjugalt kobos\n");
+      printf("5 - Kvartikus\n");
+      printf("6 - Konjugalt kvartikus\n");
+      printf("7 - Julia\n");
+      printf("8 - Konjugalt Julia\n\n");
+      printf("Valasztom: ");
+      scanf("%d", &chosenFractal);
+    }
+      
     switch(chosenFractal)
     {
       case 1:
@@ -433,57 +467,37 @@ int main(int argc, char **argv)
         break;
       case 7:
         isOK = isOK_Julia;
-        printf("Komplex parameter ertekei:\n");
-        printf("cx = ");
-        scanf("%f", &gcx);
-        printf("cy = ");
-        scanf("%f", &gcy);
+        if (!isGcxSet || !isGcySet)
+          printf("Komplex parameter erteke(i):\n");
+        if (!isGcxSet)
+        {
+          printf("cx = ");
+          scanf("%f", &gcx);
+        }
+        if (!isGcySet)
+        {
+          printf("cy = ");
+          scanf("%f", &gcy);
+        }
         break;
       case 8:
         isOK = isOK_ConjJulia;
-        printf("Komplex parameter ertekei:\n");
-        printf("cx = ");
-        scanf("%f", &gcx);
-        printf("cy = ");
-        scanf("%f", &gcy);
+        if (!isGcxSet || !isGcySet)
+          printf("Komplex parameter ertekei:\n");
+        if (!isGcxSet)
+        {
+          printf("cx = ");
+          scanf("%f", &gcx);
+        }
+        if (!isGcySet)
+        {
+          printf("cy = ");
+          scanf("%f", &gcy);
+        }
         break;
       default:
         printf("Hibas valasztas.\n\n");
         return -2;
-    }
-    
-    if (readConfig() != 1)
-      return -1;
-    
-    if (NOTHREADS > 4 || NOTHREADS < 1)
-    {
-      fprintf(stderr, "Invalid threadnumber!\n");
-      return -3;
-    }
-    
-    // processing command-line arguments
-    for (i = 1; i < argc; i++)
-    {
-      switch(argv[i][0])
-      {
-        case 'f':
-          break;
-        case 'x':
-          //float temp;
-          //sscanf()
-          break;
-        case 'y':
-          break;
-        case 'z':
-          break;
-        case 'p':
-          break;
-        case 't':
-          break; 
-        default:
-          printf("Invalid command-line parameter: \'%c\' !", argv[i][0]);
-          return -4;
-      }
     }
     
     fileNumber = getFileNumber();
@@ -491,11 +505,17 @@ int main(int argc, char **argv)
     bitmap = (char*) malloc(HEIGHT * WIDTH * 4 * sizeof(char));
       
     generate(NOTHREADS);
+    
+    if(printOnly)
+    {
+      writeBmp();
+      return 1;
+    }
    
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
     glutInitWindowSize(500, 500);
-    glutCreateWindow("first");
+    glutCreateWindow("2D fractal viewer");
     glMatrixMode(GL_PROJECTION);
     glDisable(GL_DEPTH_TEST);
     glOrtho( 0, 500, 500, 0, -1, 1 );
