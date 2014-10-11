@@ -1,0 +1,11 @@
+[sound]
+begin=0.1
+end=0.3
+instr=1
+[end]
+[sound]
+begin=0.5
+end=0.8
+instr=1
+[end]
+

@@ -1,0 +1,12 @@
+
+Tervek
+------
+ * wave file-ok beolvasasa
+ * kotta file-ok olvasasa/irasa
+ * wave file-ok mixelese
+ * mp3 <-> konverzio
+ * sztereo wav
+ * fazis effektek
+ * hangszer effektek: hajlitas, vibrato, hangero
+ * FFT a beolvasott wav file-okon
+ 
