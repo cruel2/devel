@@ -10,17 +10,17 @@ typedef struct
 
 typedef struct
 {
-  int noHarmonics;
-  float* freq;
-  // float* phase;  // maybe it isn't needed
-} instrument;
+  float begin, length;
+  int instr;
+  float freq;
+  //float volume; // TODO
+} note;
 
 typedef struct
 {
-  float begin, end;
-  int instr;
-  //float volume; // TODO
-} note;
+  int noHarmonics;
+  float* harmonic;
+} instrument;
 
 // kesobb tobb savura kell atirni
 typedef struct
@@ -29,7 +29,7 @@ typedef struct
   int noNotes;
 } tab;
 
-enum blockState {NONE, SOUND};
+enum blockState {NONE, SOUND, INSTRUMENT};
 
 #endif
 
