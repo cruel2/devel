@@ -208,8 +208,8 @@ void render()
     static long bmp_counter = 0;
     
     generate();
-    CENTERX += 0.004;
-    CENTERY += 0.004;
+    CENTERX += 0.01;
+    CENTERY += 0.01;
     
     if (bmp_counter == NO_BMPS)
     {
@@ -232,6 +232,12 @@ void render()
         int r = bitmap[idx2 * 4];
         int g = bitmap[idx2 * 4 + 1];
         int b = bitmap[idx2 * 4 + 2];
+        if (r < 0)
+          r = 256 + r;
+        if (g < 0)
+          g = 256 + g;
+        if (b < 0)
+          b = 256 + b;
         
         int y = (( 66 * r + 129 * g +  25 * b + 128)>>8);
         int u = ((-38 * r -  74 * g + 112 * b + 128)>>8) + 128;
@@ -242,6 +248,7 @@ void render()
         if (j % 2 == 0)
         {
           int idx1u = (i + j/2 * WIDTH) / 2;
+
           bitmaps2[bmp_counter][idx1u] = (char)u;
           bitmaps3[bmp_counter][idx1u] = (char)v;
         }
