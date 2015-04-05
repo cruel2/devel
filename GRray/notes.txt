@@ -1,0 +1,5 @@
+
+Audio hozzaadasa:
+
+ffmpeg -i 1.mpg -i In\ Flames\ -\ Free\ Fall.mp3  -map 0 -map 1 -c copy 1a.mpg
+

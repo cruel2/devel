@@ -4,7 +4,7 @@
 
 
 //#define DEBUG
-#define pixelSize 0.0003 
+#define pixelSize 0.00015
 #define rg        0.005
 #define CENTERZ   2.0
 #define DEPTH     0.4
@@ -12,11 +12,11 @@
 #define C         1.0f
 #define OBJECTZ   4.0
 
-#define HEIGHT    200
-#define WIDTH     200
-#define BMPROW    1356
-#define BMPOFFSET 102
-#define BMPSIZE   452
+#define HEIGHT    240        // 420p
+#define WIDTH     426        // 420p
+#define BMPROW    1848       // 615 x 348 test.bmp
+#define BMPOFFSET 54
+#define BMPSIZE   552
 #define NO_BMPS   3
 
 
